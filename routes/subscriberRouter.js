@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 
 //getting one
 router.get("/:id", getSubscriber, async (req, res) => {
-  res.send(req.subscriber.name);
+  res.send(res.subscriber);
 });
 //creating one
 router.post("/", async (req, res) => {
@@ -31,17 +31,43 @@ router.post("/", async (req, res) => {
 });
 
 //updatind one
-router.patch("/", async (req, res) => {});
+router.patch("/:id",getSubscriber, async (req, res) => {
+    if(req.body.name != null){
+        res.subscriber.name = req.body.name;
+    }
+
+    if(req.body.subscribedToChannel != null){
+        res.subscriber.subscribedToChannel = req.body.subscribedToChannel
+    }
+
+    try {
+        const updatedSubscriber = await res.subscriber.save()
+        res.json(updatedSubscriber)
+    } catch (error) {
+        res.status(400).json({message:error.message})
+        
+    }
+});
 
 //deleting one
-router.delete("/", async (req, res) => {});
+router.delete("/:id",getSubscriber, async (req, res) => {
+    try {
+        await res.subscriber.deleteOne()
+        res.json({message:"Deleted Suscriber"})
+        
+    } catch (error) {
+      res.status(500).json({message:error.message})
+        
+    }
+
+});
 
 async function getSubscriber(req, res, next) {
   let subscriber;
   try {
     subscriber = await Subscriber.findById(req.params.id);
     if (subscriber == null) {
-      return res.status(404).json({ message: "Canot find sunscriber" });
+      return res.status(404).json({ message: "Canot find subscriber" });
     }
   } catch (error) {
     return res.status(500).json({ message: error.message });
